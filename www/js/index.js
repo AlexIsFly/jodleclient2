@@ -17,6 +17,7 @@
  * under the License.
  */
 var socket;
+var ip = "129.88.57.27";
 document.addEventListener('deviceready', onDeviceReady , false);
 function onDeviceReady (){
     // totalite  du code de l application
@@ -32,7 +33,7 @@ function onDeviceReady (){
         alert("CLICKED");
         $.ajax({
             method : "GET",
-            url : "http://129.88.57.27:8080/api/users", 
+            url : "http://"+ip+":8080/api/users", 
             dataType : "json",
             success : function(data, statut) {
                 alert("getAppContacts");
@@ -48,7 +49,7 @@ function onDeviceReady (){
         var phone = $('#phone').val()
         $.ajax({
             method : "GET",
-            url : "http://129.88.57.27:8080/api/user/"+phone, 
+            url : "http://"+ip+":8080/api/user/"+phone, 
             dataType : "json",
             success : function(data, statut) {
                 console.log(data.isHere[0].count);
@@ -67,16 +68,16 @@ function onDeviceReady (){
     
     $(document).on("click","#signup", function() {
         console.log("SIGNUP");
-        var phone = $('#phone').val()
+        var phone = $('#phone').val();
         var first = $('#first').val();
         var last = $('#last').val();
-        var phone = $('#phone').val();
         console.log(first);
         console.log(last);
         console.log(phone);
         $.ajax({
-            method : "GET",
-            url : "http://129.88.57.27:8080/api/user/"+phone, 
+            method : "POST",
+            url : "http://"+ip+":8080/api/user/",
+            data : {prenom:first, nom:last, phone:phone}, 
             dataType : "json",
             success : function(data, statut) {
                 console.log("Added User "+first+ " "+last);
@@ -91,10 +92,10 @@ function onDeviceReady (){
     $("#member").click(function() {
         alert("OpeningSocket");
         console.log("OpeningSocket");
-        socket = io.connect('http://129.88.57.27:8080/');
+        socket = io.connect('http://'+ip+':8080/');
         alert("Socket Connected");
         console.log("Socket Connected");
-        socket.emit('join',{phone:0630637680});
+        socket.emit('join',{phone:"0630637680"});
         socket.on('receive_msg',function(data){
            alert("msg : " + data.msg);
            console.log("msg : " + data.msg);
