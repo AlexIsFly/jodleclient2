@@ -117,9 +117,8 @@
     },
     "cordova-plugin-geolocation": {
         "source": {
-            "type": "git",
-            "url": "https://git-wip-us.apache.org/repos/asf/cordova-plugin-geolocation.git",
-            "subdir": "."
+            "type": "registry",
+            "id": "cordova-plugin-geolocation"
         },
         "is_top_level": true,
         "variables": {}

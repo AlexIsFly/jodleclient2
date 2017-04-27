@@ -17,6 +17,9 @@
  * under the License.
  */
 var socket;
+var lat;
+var long;
+//à changer 
 var ip = "129.88.57.27";
 document.addEventListener('deviceready', onDeviceReady , false);
 function onDeviceReady (){
@@ -26,8 +29,8 @@ function onDeviceReady (){
     options.multiple = true;
     options.hasPhoneNumber = true;
     var fields = [navigator.contacts.phoneNumbers];
-    navigator.contacts.find(fields, onSuccess, onError, options);
     alert("HELLO");
+    
 
     $("#contact").click(function() {
         alert("CLICKED");
@@ -36,7 +39,8 @@ function onDeviceReady (){
             url : "http://"+ip+":8080/api/users", 
             dataType : "json",
             success : function(data, statut) {
-                alert("getAppContacts");
+                navigator.contacts.find(fields, onSuccessC, onErrorC, options);
+                navigator.geolocation.getCurrentPosition(onSuccessG, onErrorG, {enableHighAccuracy: true});
             },
             error : function(xhr, statut, erreur) {
                 alert(xhr.responseText);
@@ -71,13 +75,16 @@ function onDeviceReady (){
         var phone = $('#phone').val();
         var first = $('#first').val();
         var last = $('#last').val();
+        navigator.geolocation.getCurrentPosition(onSuccessG, onErrorG, {enableHighAccuracy: true});
         console.log(first);
         console.log(last);
         console.log(phone);
+        console.log("POINT("+long+" "+lat+")");
         $.ajax({
             method : "POST",
             url : "http://"+ip+":8080/api/user/",
-            data : {prenom:first, nom:last, phone:phone}, 
+            data : {prenom:first, nom:last, phone:phone
+                , localisation:"POINT("+long+" "+lat+")"}, 
             dataType : "json",
             success : function(data, statut) {
                 console.log("Added User "+first+ " "+last);
@@ -105,18 +112,18 @@ function onDeviceReady (){
     $("#message").click(function() {
         var myArray = ['0988776655', '0123456789'];
         var myJson = JSON.stringify(myArray); // "[1,2,3]"  
-        socket.emit('message',{content:"My message for you", phones:myJson})
+        socket.emit('message',{content:"My message for you", phones:myJson});
         console.log("Message sent");
         socket.on('send_me_a_check', function(){
-            socket.emit('check')
+            socket.emit('check');
         });
     });
 
-    function onSuccess(contacts) {
+    function onSuccessC(contacts) {
         alert('Found ' + contacts.length + ' contacts.');  
     };
 
-    function onError(contactError) {
+    function onErrorC(contactError) {
         alert('onError!');
     };
 
@@ -130,5 +137,25 @@ function onDeviceReady (){
                     class="btn btn-positive btn-block">Inscription</button></li>');
         $('#phone').attr("placeholder",phone);
         $('#submit').remove();
+    };
+    
+    function onSuccessG(position) {
+        alert('Latitude: '          + position.coords.latitude          + '\n' +
+              'Longitude: '         + position.coords.longitude         + '\n' +
+              'Altitude: '          + position.coords.altitude          + '\n' +
+              'Accuracy: '          + position.coords.accuracy          + '\n' +
+              'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
+              'Heading: '           + position.coords.heading           + '\n' +
+              'Speed: '             + position.coords.speed             + '\n' +
+              'Timestamp: '         + position.timestamp                + '\n');
+      lat = position.coords.latitude;
+      long = position.coords.longitude;
+    };
+
+    // onError Callback receives a PositionError object
+    //
+    function onErrorG(error) {
+        alert('code: '    + error.code    + '\n' +
+              'message: ' + error.message + '\n');
     };
 }
