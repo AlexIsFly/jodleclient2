@@ -44,13 +44,48 @@ function onDeviceReady (){
     });
     
     $("#submit").click(function() {
-        console.log("SUBMIT")
+        console.log("SUBMIT");
+        var phone = $('#phone').val()
+        $.ajax({
+            method : "GET",
+            url : "http://130.190.110.30:8080/api/user/"+phone, 
+            dataType : "json",
+            success : function(data, statut) {
+                console.log(data.isHere[0].count);
+                if(data.isHere[0].count==0){
+                    updateForm(phone);
+                }
+                else {
+                    //messagefunction
+                }
+            },
+            error : function(xhr, statut, erreur) {
+                alert(xhr.responseText);
+            }
+        });     
+    });
+    
+    $("#signup").click(function() {
+        console.log("SIGNUP");
+        var phone = $('#phone').val()
         var first = $('#first').val();
         var last = $('#last').val();
         var phone = $('#phone').val();
         console.log(first);
         console.log(last);
         console.log(phone);
+        $.ajax({
+            method : "GET",
+            url : "http://130.190.110.30:8080/api/user/"+phone, 
+            dataType : "json",
+            success : function(data, statut) {
+                console.log("Added User "+first+ " "+last);
+                //messagefunction
+            },
+            error : function(xhr, statut, erreur) {
+                alert(xhr.responseText);
+            }
+        });
     });
     
     $("#member").click(function() {
@@ -71,6 +106,9 @@ function onDeviceReady (){
         var myJson = JSON.stringify(myArray); // "[1,2,3]"  
         socket.emit('message',{content:"My message for you", phones:myJson})
         console.log("Message sent");
+        socket.on('send_me_a_check', function(){
+            socket.emit('check')
+        });
     });
 
     function onSuccess(contacts) {
@@ -79,5 +117,16 @@ function onDeviceReady (){
 
     function onError(contactError) {
         alert('onError!');
+    };
+
+    function updateForm(phone){
+        console.log("updateForm");
+        $('#ulform ul').prepend('<li class="table-view-cell">\n\
+                    <input id="first" type="text" placeholder="Prénom"></li>');
+        $('#ulform ul').prepend('<li class="table-view-cell">\n\
+                    <input id="last" type="text" placeholder="Nom"></li>');
+        $('#phone').attr("placeholder",phone);
+        $('#submit').text("Inscription");
+        $('#submit').attr("id","signup");
     };
 }
