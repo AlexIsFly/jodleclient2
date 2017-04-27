@@ -32,7 +32,7 @@ function onDeviceReady (){
         alert("CLICKED");
         $.ajax({
             method : "GET",
-            url : "http://130.190.110.30:8080/api/users", 
+            url : "http://129.88.57.27:8080/api/users", 
             dataType : "json",
             success : function(data, statut) {
                 alert("getAppContacts");
@@ -48,7 +48,7 @@ function onDeviceReady (){
         var phone = $('#phone').val()
         $.ajax({
             method : "GET",
-            url : "http://130.190.110.30:8080/api/user/"+phone, 
+            url : "http://129.88.57.27:8080/api/user/"+phone, 
             dataType : "json",
             success : function(data, statut) {
                 console.log(data.isHere[0].count);
@@ -65,7 +65,7 @@ function onDeviceReady (){
         });     
     });
     
-    $("#signup").click(function() {
+    $(document).on("click","#signup", function() {
         console.log("SIGNUP");
         var phone = $('#phone').val()
         var first = $('#first').val();
@@ -76,7 +76,7 @@ function onDeviceReady (){
         console.log(phone);
         $.ajax({
             method : "GET",
-            url : "http://130.190.110.30:8080/api/user/"+phone, 
+            url : "http://129.88.57.27:8080/api/user/"+phone, 
             dataType : "json",
             success : function(data, statut) {
                 console.log("Added User "+first+ " "+last);
@@ -91,7 +91,7 @@ function onDeviceReady (){
     $("#member").click(function() {
         alert("OpeningSocket");
         console.log("OpeningSocket");
-        socket = io.connect('http://130.190.110.30:8080/');
+        socket = io.connect('http://129.88.57.27:8080/');
         alert("Socket Connected");
         console.log("Socket Connected");
         socket.emit('join',{phone:0630637680});
@@ -122,11 +122,12 @@ function onDeviceReady (){
     function updateForm(phone){
         console.log("updateForm");
         $('#ulform ul').prepend('<li class="table-view-cell">\n\
-                    <input id="first" type="text" placeholder="Prénom"></li>');
-        $('#ulform ul').prepend('<li class="table-view-cell">\n\
                     <input id="last" type="text" placeholder="Nom"></li>');
+        $('#ulform ul').prepend('<li class="table-view-cell">\n\
+                    <input id="first" type="text" placeholder="Prénom"></li>');
+        $('#ulform ul').append('<li><button id="signup" \n\
+                    class="btn btn-positive btn-block">Inscription</button></li>');
         $('#phone').attr("placeholder",phone);
-        $('#submit').text("Inscription");
-        $('#submit').attr("id","signup");
+        $('#submit').remove();
     };
 }
