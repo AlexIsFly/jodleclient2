@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <!--
+        Customize this policy to fit your own app's needs. For more guidance, see:
+            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+        Some notes:
+            * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+                * Enable inline JS: add 'unsafe-inline' to default-src
+        -->
+        <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: https://ssl.gstatic.com http://130.190.110.30:8080 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <link  href="css/ratchet.css" rel="stylesheet">
+        <link  href="css/ratchet-theme-android.css" rel="stylesheet">
+        <script src="http://130.190.110.30:8080/socket.io/socket.io.js"></script>
+        <title>Hello World</title>
+    </head>
+    <body>
+        <header class="bar bar-nav">
+          <h1 class="title">Push</h1>
+        </header>
+        <div class="content">
+          <div class="card">
+            <ul class="table-view">
+              <li class="table-view-cell">
+                  <h1>Welcome to Jodel Nicolas</h1>
+              </li>
+              <li class="table-view-cell">        
+                <input id="first" type="text" placeholder="Prénom">
+                <input id="last" type="text" placeholder="Nom">
+                <input id="phone" type="text" placeholder="Téléphone">                          
+              </li>
+              <li><button id='submit' class="btn btn-positive btn-block">Connection</button></li>
+              <li><button id='contact'>ClickMe</button></li>
+              <li><button id='member'>IsAMember</button></li>
+              <li><button id='message'>SendMessage</button></li>
+            </ul>
+          </div>
+        </div>
+        <script  type="text/javascript" src="js/jquery.min.js"></script>
+        <script  type="text/javascript" src="js/ratchet.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+    </body>
+</html>
