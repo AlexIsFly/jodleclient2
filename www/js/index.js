@@ -18,20 +18,162 @@
  */
 var socket;
 var lat;
-var long;
+var longi;
+var phone;
+var allcontacts = [];
 //à changer 
-var ip = "129.88.57.27";
+var ip = "192.168.0.37";
 document.addEventListener('deviceready', onDeviceReady , false);
 function onDeviceReady (){
     // totalite  du code de l application
-    var options      = new ContactFindOptions();
-    options.filter   = "";
-    options.multiple = true;
-    options.hasPhoneNumber = true;
-    var fields = [navigator.contacts.phoneNumbers];
-    alert("HELLO");
+    alert("Welcome to Jodle");
     
+    
+    //We check if the phone number entered is already in the db
+    $("#submit").click(function() {
+        console.log("SUBMIT");
+        phone = $('#phone').val()
+        console.log(phone);
+        $.ajax({
+            method : "GET",
+            url : "http://"+ip+":8080/api/user/"+phone, 
+            dataType : "json",
+            success : function(data, statut) {
+                console.log(data.isHere[0].count);
+                if(data.isHere[0].count==0){
+                    updateForm(phone);
+                }
+                else {
+                   loginSuccessful();
+                }
+            },
+            error : function(xhr, statut, erreur) {
+                alert(xhr.responseText);
+            }
+        });     
+        console.log("AJAX done");   
+    });
+    
+    $(document).on("click","#signup", function() {
+        console.log("SIGNUP");
+        phone = $('#phone').val();
+        var first = $('#first').val();
+        var last = $('#last').val();
+        navigator.geolocation.getCurrentPosition(function(position) {
+            console.log(first);
+            console.log(last);
+            console.log(phone);
+            alert('Latitude: '          + position.coords.latitude          + '\n' +
+              'Longitude: '         + position.coords.longitude         + '\n' +
+              'Altitude: '          + position.coords.altitude          + '\n' +
+              'Accuracy: '          + position.coords.accuracy          + '\n' +
+              'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
+              'Heading: '           + position.coords.heading           + '\n' +
+              'Speed: '             + position.coords.speed             + '\n' +
+              'Timestamp: '         + position.timestamp                + '\n');
+            lat = position.coords.latitude;
+            longi = position.coords.longitude;
+            console.log("POINT("+longi+" "+lat+")");
+            $.ajax({
+                method : "POST",
+                url : "http://"+ip+":8080/api/user/",
+                data : $(this).serialize() + '&prenom=' + first + '&nom=' + last + '&phone=' + phone + '&localisation=POINT('+longi+ ' ' + lat+')',
+                contentType : 'application/x-www-form-urlencoded', 
+                dataType : "json",
+                success : function(data, statut) {
+                    console.log("Added User "+first+ " "+last);
+                    loginSuccessful();
+                },
+                error : function(xhr, statut, erreur) {
+                    alert(xhr.responseText);
+                }
+            });
+        }
+        , onErrorG, {enableHighAccuracy: true});
+       
+    });
 
+    $(document).on("click","#send", function() {
+        console.log("SENDMESSAGE");
+        var myArray = allcontacts;
+        var myJson = JSON.stringify(myArray); // "[1,2,3]" 
+        alert("Sent to " + myJson);
+        socket.emit('message',{content:"My message for you from one", phones:myJson});
+        console.log("Message sent");
+    });
+    
+    function loginSuccessful() {
+        alert("Login Successful");
+        var options      = new ContactFindOptions();
+        options.filter   = "";
+        options.multiple = true;
+        options.hasPhoneNumber = true;
+        var fields = [navigator.contacts.phoneNumbers];       
+        navigator.contacts.find(fields, function(contacts){
+            console.log('Found ' + contacts.length + ' contacts.');
+            for(var i=0; i<contacts.length; i++){
+                allcontacts.push(contacts[i].phoneNumbers[0].value);
+            }
+        }
+        , onErrorC, options);
+        alert("OpeningSocket");
+        console.log("OpeningSocket");
+        socket = io.connect('http://'+ip+':8080/');
+        alert("Socket Connected");
+        console.log("Socket Connected");
+        socket.emit('join',{phone:phone});
+        socket.on('receive_msg',function(data){
+           alert("msg : " + data);
+           console.log("msg : " + data);
+        });
+        socket.on('messages_bdd',function(data){
+           for (var i = 0; i < data.length; i++) {
+                 alert("Message " + (i+1) + " " + data[i].messages);
+                 console.log("BDD : " + data[i].messages);
+            } 
+        });
+        updateSendMessage();
+    }
+
+
+    function updateForm(phone){
+        console.log("updateForm");
+        $('#ulform ul').prepend('<li class="table-view-cell">\n\
+                    <input id="last" type="text" placeholder="Nom"></li>');
+        $('#ulform ul').prepend('<li class="table-view-cell">\n\
+                    <input id="first" type="text" placeholder="Prénom"></li>');
+        $('#ulform ul').append('<li><button id="signup" \n\
+                    class="btn btn-positive btn-block">Inscription</button></li>');
+        $('#phone').attr("placeholder",phone);
+        $('#submit').remove();
+    };
+    
+    function updateSendMessage(){
+        $('#ulform ul').empty();
+        $('#ulform ul').append('<li class="table-view-cell">\n\
+            <p>VOTRE MESSAGE</p>\n\
+            <textarea id="msgcontent" rows="5"></textarea></li>');
+        $('#ulform ul').append('<li class="table-view-cell">\n\
+                    <button id="send" \n\
+                    class="btn btn-positive btn-block">Envoyer</button></li>');
+    };
+    
+    // onError Callback for contact
+    function onErrorC(contactError) {
+        alert('Contact onError!');
+    };
+
+    // onError Callback for geolocalisation
+    function onErrorG(error) {
+        alert('code: '    + error.code    + '\n' +
+              'message: ' + error.message + '\n');
+    };
+    
+    
+    //All below are for testing purposes ONLY
+    
+    
+    //button clickMe, useless and outdated
     $("#contact").click(function() {
         alert("CLICKED");
         $.ajax({
@@ -48,114 +190,27 @@ function onDeviceReady (){
         });   
     });
     
-    $("#submit").click(function() {
-        console.log("SUBMIT");
-        var phone = $('#phone').val()
-        $.ajax({
-            method : "GET",
-            url : "http://"+ip+":8080/api/user/"+phone, 
-            dataType : "json",
-            success : function(data, statut) {
-                console.log(data.isHere[0].count);
-                if(data.isHere[0].count==0){
-                    updateForm(phone);
-                }
-                else {
-                    //messagefunction
-                }
-            },
-            error : function(xhr, statut, erreur) {
-                alert(xhr.responseText);
-            }
-        });     
-    });
     
-    $(document).on("click","#signup", function() {
-        console.log("SIGNUP");
-        var phone = $('#phone').val();
-        var first = $('#first').val();
-        var last = $('#last').val();
-        navigator.geolocation.getCurrentPosition(onSuccessG, onErrorG, {enableHighAccuracy: true});
-        console.log(first);
-        console.log(last);
-        console.log(phone);
-        console.log("POINT("+long+" "+lat+")");
-        $.ajax({
-            method : "POST",
-            url : "http://"+ip+":8080/api/user/",
-            data : {prenom:first, nom:last, phone:phone
-                , localisation:"POINT("+long+" "+lat+")"}, 
-            dataType : "json",
-            success : function(data, statut) {
-                console.log("Added User "+first+ " "+last);
-                //messagefunction
-            },
-            error : function(xhr, statut, erreur) {
-                alert(xhr.responseText);
-            }
-        });
-    });
-    
+    //button Member, useless and outdated
     $("#member").click(function() {
         alert("OpeningSocket");
         console.log("OpeningSocket");
         socket = io.connect('http://'+ip+':8080/');
         alert("Socket Connected");
         console.log("Socket Connected");
-        socket.emit('join',{phone:"0630637680"});
-        socket.on('receive_msg',function(data){
-           alert("msg : " + data.msg);
-           console.log("msg : " + data.msg);
-        });
-    });
+        socket.emit('join',{phone:phone});
 
+    });
+    
+    //button SendMessage, useless and outdated
     $("#message").click(function() {
-        var myArray = ['0988776655', '0123456789'];
-        var myJson = JSON.stringify(myArray); // "[1,2,3]"  
-        socket.emit('message',{content:"My message for you", phones:myJson});
+        var myArray = allcontacts;
+        var myJson = JSON.stringify(myArray); // "[1,2,3]"
+        socket.emit('message',{content:"My message for you from one", phones:myJson});
         console.log("Message sent");
         socket.on('send_me_a_check', function(){
             socket.emit('check');
         });
     });
-
-    function onSuccessC(contacts) {
-        alert('Found ' + contacts.length + ' contacts.');  
-    };
-
-    function onErrorC(contactError) {
-        alert('onError!');
-    };
-
-    function updateForm(phone){
-        console.log("updateForm");
-        $('#ulform ul').prepend('<li class="table-view-cell">\n\
-                    <input id="last" type="text" placeholder="Nom"></li>');
-        $('#ulform ul').prepend('<li class="table-view-cell">\n\
-                    <input id="first" type="text" placeholder="Prénom"></li>');
-        $('#ulform ul').append('<li><button id="signup" \n\
-                    class="btn btn-positive btn-block">Inscription</button></li>');
-        $('#phone').attr("placeholder",phone);
-        $('#submit').remove();
-    };
     
-    function onSuccessG(position) {
-        alert('Latitude: '          + position.coords.latitude          + '\n' +
-              'Longitude: '         + position.coords.longitude         + '\n' +
-              'Altitude: '          + position.coords.altitude          + '\n' +
-              'Accuracy: '          + position.coords.accuracy          + '\n' +
-              'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
-              'Heading: '           + position.coords.heading           + '\n' +
-              'Speed: '             + position.coords.speed             + '\n' +
-              'Timestamp: '         + position.timestamp                + '\n');
-      lat = position.coords.latitude;
-      long = position.coords.longitude;
-    };
-
-    // onError Callback receives a PositionError object
-    //
-    function onErrorG(error) {
-        alert('code: '    + error.code    + '\n' +
-              'message: ' + error.message + '\n');
-    };
 }

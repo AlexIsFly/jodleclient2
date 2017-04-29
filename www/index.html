@@ -35,7 +35,7 @@
         <link rel="stylesheet" type="text/css" href="css/index.css">
         <link  href="css/ratchet.css" rel="stylesheet">
         <link  href="css/ratchet-theme-android.css" rel="stylesheet">
-        <script src="http://129.88.57.27:8080/socket.io/socket.io.js"></script>
+        <script src="http://192.168.0.37:8080/socket.io/socket.io.js"></script>
         <title>Hello World</title>
     </head>
     <body>
@@ -45,7 +45,7 @@
         <div class="content">
           <div id="ulform" class="card">
             <ul class="table-view">
-              <li class="table-view-cell"><input id="phone" type="text" placeholder="Ton # de téléphone"></li>
+              <li class="table-view-cell"><input id="phonenum" type="tel" pattern="^(\d{3}) \d{3}-\d{4}$" required placeholder="(xxx) xxx-xxxx" ></li>
               <li><button id='submit' class="btn btn-positive btn-block">Connection</button></li>
               <li><button id='contact'>ClickMe</button></li>
               <li><button id='member'>IsAMember</button></li>
