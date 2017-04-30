@@ -21,6 +21,7 @@ var lat;
 var longi;
 var phone;
 var allcontacts = [];
+var fakephones = ["(123) 456-7890","(987) 654-3211"]
 //à changer 
 var ip = "192.168.0.37";
 document.addEventListener('deviceready', onDeviceReady , false);
@@ -92,27 +93,23 @@ function onDeviceReady (){
         , onErrorG, {enableHighAccuracy: true});
        
     });
-
-    $(document).on("click","#send", function() {
-        console.log("SENDMESSAGE");
-        var myArray = allcontacts;
-        var myJson = JSON.stringify(myArray); // "[1,2,3]" 
-        alert("Sent to " + myJson);
-        socket.emit('message',{content:"My message for you from one", phones:myJson});
-        console.log("Message sent");
-    });
     
     function loginSuccessful() {
         alert("Login Successful");
         var options      = new ContactFindOptions();
+        var i;
         options.filter   = "";
         options.multiple = true;
         options.hasPhoneNumber = true;
         var fields = [navigator.contacts.phoneNumbers];       
         navigator.contacts.find(fields, function(contacts){
             console.log('Found ' + contacts.length + ' contacts.');
-            for(var i=0; i<contacts.length; i++){
-                allcontacts.push(contacts[i].phoneNumbers[0].value);
+            for(i=0; i<contacts.length; i++) {
+                var phonenumber = contacts[i].phoneNumbers[0].value
+                console.log("BEFORE : "+phonenumber);
+                var stdphonenumber = phonenumber.replace(/[^0-9]/g, '');
+                console.log("AFTER : "+stdphonenumber);
+                allcontacts.push(stdphonenumber);
             }
         }
         , onErrorC, options);
@@ -134,6 +131,16 @@ function onDeviceReady (){
         });
         updateSendMessage();
     }
+
+    $(document).on("click","#send", function() {
+        console.log("SENDMESSAGE");
+        var myArray = allcontacts;
+        var msgcontent = $("#msgcontent");
+        var myJson = JSON.stringify(myArray); // "[1,2,3]" 
+        alert("Sent to " + myJson);
+        socket.emit('message',{content:"My message for you from one", phones:myJson});
+        console.log("Message sent");
+    });
 
 
     function updateForm(phone){
