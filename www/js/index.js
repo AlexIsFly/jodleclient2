@@ -138,7 +138,24 @@ function onDeviceReady (){
         var msgcontent = $("#msgcontent");
         var myJson = JSON.stringify(myArray); // "[1,2,3]" 
         alert("Sent to " + myJson);
-        socket.emit('message',{content:"My message for you from one", phones:myJson});
+        navigator.geolocation.getCurrentPosition(function(position) {
+            console.log(first);
+            console.log(last);
+            console.log(phone);
+            alert('Latitude: '          + position.coords.latitude          + '\n' +
+              'Longitude: '         + position.coords.longitude         + '\n' +
+              'Altitude: '          + position.coords.altitude          + '\n' +
+              'Accuracy: '          + position.coords.accuracy          + '\n' +
+              'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
+              'Heading: '           + position.coords.heading           + '\n' +
+              'Speed: '             + position.coords.speed             + '\n' +
+              'Timestamp: '         + position.timestamp                + '\n');
+            lat = position.coords.latitude;
+            longi = position.coords.longitude;
+            console.log("POINT("+longi+" "+lat+")");           
+        }
+        , onErrorG, {enableHighAccuracy: true});
+        socket.emit('message',{content:msgcontent, phones:myJson, localisation:'POINT('+longi+ ' ' + lat+')'});
         console.log("Message sent");
     });
 
