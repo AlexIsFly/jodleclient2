@@ -23,7 +23,7 @@ var phone;
 var allcontacts = [];
 var fakephones = ["(123) 456-7890","(987) 654-3211"]
 //à changer 
-var ip = "192.168.0.37";
+var ip = "192.168.1.22";
 document.addEventListener('deviceready', onDeviceReady , false);
 function onDeviceReady (){
     // totalite  du code de l application
@@ -34,25 +34,30 @@ function onDeviceReady (){
     $("#submit").click(function() {
         console.log("SUBMIT");
         phone = $('#phone').val()
+        phone = phone.replace(/[^0-9]/g, '');
         console.log(phone);
-        $.ajax({
-            method : "GET",
-            url : "http://"+ip+":8080/api/user/"+phone, 
-            dataType : "json",
-            success : function(data, statut) {
-                console.log(data.isHere[0].count);
-                if(data.isHere[0].count==0){
-                    updateForm(phone);
+        if (phone.length == 10) {
+            $.ajax({
+                method : "GET",
+                url : "http://"+ip+":8080/api/user/"+phone, 
+                dataType : "json",
+                success : function(data, statut) {
+                    console.log(data.isHere[0].count);
+                    if(data.isHere[0].count==0){
+                        updateForm(phone);
+                    }
+                    else {
+                       loginSuccessful();
+                    }
+                },
+                error : function(xhr, statut, erreur) {
+                    alert(xhr.responseText);
                 }
-                else {
-                   loginSuccessful();
-                }
-            },
-            error : function(xhr, statut, erreur) {
-                alert(xhr.responseText);
-            }
-        });     
-        console.log("AJAX done");   
+            });     
+            console.log("AJAX done");
+        } else {
+            alert("Mauvaise saisie du numéro de téléphone");
+        }
     });
     
     $(document).on("click","#signup", function() {
@@ -139,9 +144,6 @@ function onDeviceReady (){
         var myJson = JSON.stringify(myArray); // "[1,2,3]" 
         alert("Sent to " + myJson);
         navigator.geolocation.getCurrentPosition(function(position) {
-            console.log(first);
-            console.log(last);
-            console.log(phone);
             alert('Latitude: '          + position.coords.latitude          + '\n' +
               'Longitude: '         + position.coords.longitude         + '\n' +
               'Altitude: '          + position.coords.altitude          + '\n' +
