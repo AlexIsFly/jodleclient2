@@ -140,7 +140,7 @@ function onDeviceReady (){
     $(document).on("click","#send", function() {
         console.log("SENDMESSAGE");
         var myArray = allcontacts;
-        var msgcontent = $("#msgcontent");
+        var msgcontent = $("#msgcontent").value;
         var myJson = JSON.stringify(myArray); // "[1,2,3]" 
         alert("Sent to " + myJson);
         navigator.geolocation.getCurrentPosition(function(position) {
