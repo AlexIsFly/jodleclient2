@@ -69,7 +69,7 @@ function onDeviceReady (){
             console.log(first);
             console.log(last);
             console.log(phone);
-            alert('Latitude: '          + position.coords.latitude          + '\n' +
+            console.log('Latitude: '          + position.coords.latitude          + '\n' +
               'Longitude: '         + position.coords.longitude         + '\n' +
               'Altitude: '          + position.coords.altitude          + '\n' +
               'Accuracy: '          + position.coords.accuracy          + '\n' +
@@ -101,8 +101,9 @@ function onDeviceReady (){
     
     function loginSuccessful() {
         alert("Login Successful");
-        var options      = new ContactFindOptions();
         var i;
+        /*
+        var options      = new ContactFindOptions();
         options.filter   = "";
         options.multiple = true;
         options.hasPhoneNumber = true;
@@ -118,10 +119,16 @@ function onDeviceReady (){
             }
         }
         , onErrorC, options);
-        alert("OpeningSocket");
+        */
+            for(i=0; i<2; i++) {
+                var phonenumber = fakephones[i];
+                console.log("BEFORE : "+phonenumber);
+                var stdphonenumber = phonenumber.replace(/[^0-9]/g, '');
+                console.log("AFTER : "+stdphonenumber);
+                allcontacts.push(stdphonenumber);
+            }
         console.log("OpeningSocket");
         socket = io.connect('http://'+ip+':8080/');
-        alert("Socket Connected");
         console.log("Socket Connected");
         socket.emit('join',{phone:phone});
         socket.on('receive_msg',function(data){
@@ -144,7 +151,7 @@ function onDeviceReady (){
         var myJson = JSON.stringify(myArray); // "[1,2,3]" 
         alert("Sent to " + myJson);
         navigator.geolocation.getCurrentPosition(function(position) {
-            alert('Latitude: '          + position.coords.latitude          + '\n' +
+            console.log('Latitude: '          + position.coords.latitude          + '\n' +
               'Longitude: '         + position.coords.longitude         + '\n' +
               'Altitude: '          + position.coords.altitude          + '\n' +
               'Accuracy: '          + position.coords.accuracy          + '\n' +
@@ -154,11 +161,11 @@ function onDeviceReady (){
               'Timestamp: '         + position.timestamp                + '\n');
             lat = position.coords.latitude;
             longi = position.coords.longitude;
-            console.log("POINT("+longi+" "+lat+")");           
+            console.log("POINT("+longi+" "+lat+")");
+            console.log("Message sent");
+            socket.emit('message',{content:msgcontent, phones:myJson, localisation:'POINT('+longi+ ' ' + lat+')'});  
         }
         , onErrorG, {enableHighAccuracy: true});
-        socket.emit('message',{content:msgcontent, phones:myJson, localisation:'POINT('+longi+ ' ' + lat+')'});
-        console.log("Message sent");
     });
 
 
