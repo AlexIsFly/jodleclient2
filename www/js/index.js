@@ -66,43 +66,42 @@ function onDeviceReady (){
         var first = $('#first').val();
         var last = $('#last').val();
         navigator.geolocation.getCurrentPosition(function(position) {
-            console.log(first);
-            console.log(last);
-            console.log(phone);
-            console.log('Latitude: '          + position.coords.latitude          + '\n' +
-              'Longitude: '         + position.coords.longitude         + '\n' +
-              'Altitude: '          + position.coords.altitude          + '\n' +
-              'Accuracy: '          + position.coords.accuracy          + '\n' +
-              'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
-              'Heading: '           + position.coords.heading           + '\n' +
-              'Speed: '             + position.coords.speed             + '\n' +
-              'Timestamp: '         + position.timestamp                + '\n');
-            lat = position.coords.latitude;
-            longi = position.coords.longitude;
-            console.log("POINT("+longi+" "+lat+")");
-            $.ajax({
-                method : "POST",
-                url : "http://"+ip+":8080/api/user/",
-                data : $(this).serialize() + '&prenom=' + first + '&nom=' + last + '&phone=' + phone + '&localisation=POINT('+longi+ ' ' + lat+')',
-                contentType : 'application/x-www-form-urlencoded', 
-                dataType : "json",
-                success : function(data, statut) {
-                    console.log("Added User "+first+ " "+last);
-                    loginSuccessful();
-                },
-                error : function(xhr, statut, erreur) {
-                    alert(xhr.responseText);
-                }
-            });
+            signupProcess(position, first, last, phone);
         }
         , onErrorG, {enableHighAccuracy: true});
        
     });
+
+    function signupProcess(position, first, last, phone) {
+        console.log(first);
+        console.log(last);
+        console.log(phone);
+        console.log('Latitude: '          + position.coords.latitude          + '\n' +
+          'Longitude: '         + position.coords.longitude         + '\n' +
+          'Timestamp: '         + position.timestamp                + '\n');
+        lat = position.coords.latitude;
+        longi = position.coords.longitude;
+        console.log("POINT("+longi+" "+lat+")");
+        $.ajax({
+            method : "POST",
+            url : "http://"+ip+":8080/api/user/",
+            data : $(this).serialize() + '&prenom=' + first + '&nom=' + last + '&phone=' + phone + '&localisation=POINT('+longi+ ' ' + lat+')',
+            contentType : 'application/x-www-form-urlencoded', 
+            dataType : "json",
+            success : function(data, statut) {
+                console.log("Added User "+first+ " "+last);
+                loginSuccessful();
+            },
+            error : function(xhr, statut, erreur) {
+                alert(xhr.responseText);
+            }
+        });
+    }
     
     function loginSuccessful() {
         alert("Login Successful");
         var i;
-        /*
+        
         var options      = new ContactFindOptions();
         options.filter   = "";
         options.multiple = true;
@@ -119,7 +118,7 @@ function onDeviceReady (){
             }
         }
         , onErrorC, options);
-        */
+        /*
             for(i=0; i<2; i++) {
                 var phonenumber = fakephones[i];
                 console.log("BEFORE : "+phonenumber);
@@ -127,6 +126,7 @@ function onDeviceReady (){
                 console.log("AFTER : "+stdphonenumber);
                 allcontacts.push(stdphonenumber);
             }
+            */
         console.log("OpeningSocket");
         socket = io.connect('http://'+ip+':8080/');
         console.log("Socket Connected");
@@ -147,17 +147,12 @@ function onDeviceReady (){
     $(document).on("click","#send", function() {
         console.log("SENDMESSAGE");
         var myArray = allcontacts;
-        var msgcontent = $("#msgcontent").value;
+        var msgcontent = $("#msgcontent").val();
         var myJson = JSON.stringify(myArray); // "[1,2,3]" 
         alert("Sent to " + myJson);
         navigator.geolocation.getCurrentPosition(function(position) {
             console.log('Latitude: '          + position.coords.latitude          + '\n' +
               'Longitude: '         + position.coords.longitude         + '\n' +
-              'Altitude: '          + position.coords.altitude          + '\n' +
-              'Accuracy: '          + position.coords.accuracy          + '\n' +
-              'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
-              'Heading: '           + position.coords.heading           + '\n' +
-              'Speed: '             + position.coords.speed             + '\n' +
               'Timestamp: '         + position.timestamp                + '\n');
             lat = position.coords.latitude;
             longi = position.coords.longitude;
