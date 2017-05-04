@@ -21,7 +21,7 @@ var lat;
 var longi;
 var phone;
 var allcontacts = [];
-var fakephones = ["(123) 456-7890","(987) 654-3211"]
+var fakephones = ["(123) 456-7890","(987) 654-3211", "1502199466", "1502199477"]
 //à changer 
 var ip = "192.168.1.22";
 document.addEventListener('deviceready', onDeviceReady , false);
@@ -101,7 +101,7 @@ function onDeviceReady (){
     function loginSuccessful() {
         alert("Login Successful");
         var i;
-        
+        /*
         var options      = new ContactFindOptions();
         options.filter   = "";
         options.multiple = true;
@@ -118,38 +118,55 @@ function onDeviceReady (){
             }
         }
         , onErrorC, options);
-        /*
-            for(i=0; i<2; i++) {
+        */
+            for(i=0; i<fakephones.length; i++) {
                 var phonenumber = fakephones[i];
-                console.log("BEFORE : "+phonenumber);
                 var stdphonenumber = phonenumber.replace(/[^0-9]/g, '');
-                console.log("AFTER : "+stdphonenumber);
                 allcontacts.push(stdphonenumber);
             }
-            */
-        console.log("OpeningSocket");
-        socket = io.connect('http://'+ip+':8080/');
-        console.log("Socket Connected");
-        socket.emit('join',{phone:phone});
-        socket.on('receive_msg',function(data){
-           alert("msg : " + data);
-           console.log("msg : " + data);
-        });
-        socket.on('messages_bdd',function(data){
-           for (var i = 0; i < data.length; i++) {
-                 alert("Message " + (i+1) + " " + data[i].messages);
-                 console.log("BDD : " + data[i].messages);
-            } 
-        });
-        updateSendMessage();
+        
+        navigator.geolocation.getCurrentPosition(function(position) {
+            console.log("Updating location")
+            lat = position.coords.latitude;
+            longi = position.coords.longitude;
+            console.log("   POINT("+longi+" "+lat+")");
+            $.ajax({
+                method : "PUT",
+                url : "http://"+ip+":8080/api/user/",
+                data : $(this).serialize() + '&phone=' + phone + '&localisation=POINT('+longi+ ' ' + lat+')',
+                contentType : 'application/x-www-form-urlencoded', 
+                dataType : "json",
+                success : function(data, statut) {
+                    console.log("   Location updated");
+                    socket = io.connect('http://'+ip+':8080/');
+                    socket.emit('join',{phone:phone});
+                    socket.on('receive_msg',function(data){
+                       alert("msg : " + data);
+                       console.log("msg : " + data);
+                    });
+                    socket.on('messages_bdd',function(data){
+                       for (var i = 0; i < data.length; i++) {
+                             alert("Message " + (i+1) + " " + data[i].messages);
+                             console.log("BDD : " + data[i].messages);
+                        } 
+                    });
+                    updateSendMessage();
+                },
+                error : function(xhr, statut, erreur) {
+                    alert(xhr.responseText);
+                }
+            });
+        }
+        , onErrorG, {enableHighAccuracy: true});  
     }
 
     $(document).on("click","#send", function() {
         console.log("SENDMESSAGE");
         var myArray = allcontacts;
         var msgcontent = $("#msgcontent").val();
+        var rayon = $("#rayon").val();
         var myJson = JSON.stringify(myArray); // "[1,2,3]" 
-        alert("Sent to " + myJson);
+        console.log("Sent to " + myJson);
         navigator.geolocation.getCurrentPosition(function(position) {
             console.log('Latitude: '          + position.coords.latitude          + '\n' +
               'Longitude: '         + position.coords.longitude         + '\n' +
@@ -157,8 +174,10 @@ function onDeviceReady (){
             lat = position.coords.latitude;
             longi = position.coords.longitude;
             console.log("POINT("+longi+" "+lat+")");
-            console.log("Message sent");
-            socket.emit('message',{content:msgcontent, phones:myJson, localisation:'POINT('+longi+ ' ' + lat+')'});  
+            var timestamp = Date.now()/3600000
+            console.log("Message sent at "+timestamp+" rayon : "+rayon);
+            socket.emit('message',{content:msgcontent, phones:myJson, localisation:'POINT('+longi+ ' ' + lat+')', sendDate:timestamp, rayon:rayon});
+            alert("Message was sent");
         }
         , onErrorG, {enableHighAccuracy: true});
     });
@@ -177,10 +196,14 @@ function onDeviceReady (){
     };
     
     function updateSendMessage(){
+        $('.title').text('Connected as '+phone);
         $('#ulform ul').empty();
         $('#ulform ul').append('<li class="table-view-cell">\n\
             <p>VOTRE MESSAGE</p>\n\
             <textarea id="msgcontent" rows="5"></textarea></li>');
+        $('#ulform ul').append('<li class="table-view-cell">\n\
+            <p>RAYON EN M</p>\n\
+            <input id="rayon" type="text" placeholder="rayon"></li>');
         $('#ulform ul').append('<li class="table-view-cell">\n\
                     <button id="send" \n\
                     class="btn btn-positive btn-block">Envoyer</button></li>');
